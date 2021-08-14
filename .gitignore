@@ -6,6 +6,12 @@ __pycache__/
 # C extensions
 *.so
 
+# VS files
+*.code-workspace
+
+# Debug files
+parser.out
+
 # Distribution / packaging
 .Python
 build/
