@@ -38,7 +38,7 @@ class SimpleLexer(Lexer):
 # --- Grammar
 class SimpleParser(Parser):
     # uncomment the following line to output the parser logs
-    debugfile = 'parser.out'
+    # debugfile = 'parser.out'
     # required
     tokens = SimpleLexer.tokens
 
@@ -115,10 +115,13 @@ class SimpleParser(Parser):
 lexer = SimpleLexer()
 parser = SimpleParser()
 
-example = """;;;  ; 
+example = """
+;;;  ; 
 ,,
 
-,,,,,,,,>> | ,>>,,,,,,,,,,
+,,,,,,--,,>> |
+         ,>>,,,,,
+            ,,,,,
 
    ,_,_:_,~~
     _,~:_,_ |
@@ -127,13 +130,16 @@ example = """;;;  ;
         ~_
 
 
-'''~++
---'
->>    <
-;++
-x"""
+    '''~++
+     --' 
+  >>    <
+    ;++
+     x
 
-for tok in lexer.tokenize(example):
-    print(f"type={tok.type}, value='{tok.value}'")
+
+"""
+
+# for tok in lexer.tokenize(example):
+#     print(f"type={tok.type}, value='{tok.value}'")
 
 print(parser.parse(lexer.tokenize(example)))
