@@ -4,20 +4,23 @@ from sly import Lexer, Parser
 
 
 class SimpleLexer(Lexer):
-    tokens = {ID, LSHIFTER, RSHIFTER, END}
+    tokens = {ID, LSHIFTER, RSHIFTER, EXT, DOCT, UOCT, END}
 
     ignore = ' \t'
 
-    ID = r"[,:;'~]"
+    ID = r"[,:;'~.]"
     LSHIFTER = r'<{1,}'
     RSHIFTER = r'>{1,}'
-    END = r'x|\n{2,}'
+    EXT=r'_'
+    DOCT=r'\-{1,}'
+    UOCT=r'\+{1,}'
+    END = r'x|\n{2,}|\|'
 
     def error(self, t):
         print(f"Ignoring {t.value[0]}")
         self.index += 1
 
-    def ID(self ,t):
+    def ID(self, t):
         if t.value == ",":
             t.value = "C"
         elif t.value == ":":
@@ -28,8 +31,9 @@ class SimpleLexer(Lexer):
             t.value = "G"
         elif t.value == "~":
             t.value = "A"
+        elif t.value == '.':
+            t.value = "r"
         return t
-
     
 # --- Grammar
 class SimpleParser(Parser):
@@ -66,13 +70,38 @@ class SimpleParser(Parser):
     def expr(self, p):
         return (p.ID)
     
+    @_('DOCT expr')
+    def expr(self, p):
+        """Return note, 'down', and the number of octaves"""
+        fs = re.findall(r'\-', p.DOCT)
+        return (p.expr, 'down', len(fs))
+
+    @_('expr UOCT')
+    def expr(self, p):
+        """Return note, 'up', and the number of octaves"""
+        ss = re.findall(r'\+', p.UOCT)
+        return (p.expr, 'up', len(ss))
+    
     @_('LSHIFTER ID')
     def expr(self, p):
-        return (p.LSHIFTER, p.ID)
+        """Return note, 'flat', and the number of seminote"""
+        matches = re.findall(r'\<', p.LSHIFTER)
+        return (p.ID, 'flat', len(matches))
 
     @_('ID RSHIFTER')
     def expr(self, p):
-        return (p.RSHIFTER, p.ID)
+        """Return note, 'sharp', and the number of seminote"""
+        matches = re.findall(r'\>', p.RSHIFTER)
+        return (p.ID, 'sharp', len(matches))
+
+    @_('expr EXT')
+    def expr(self, p):
+        """Return a note with its length of extension"""
+        if len(p.expr) == 2:
+            n_ext = p.expr[1] + 1
+            return (p.expr[0], n_ext)
+        else:
+            return (p.expr, 1)
 
     @_('END')
     def end(self, p):
@@ -89,12 +118,19 @@ parser = SimpleParser()
 example = """;;;  ; 
 ,,
 
+,,,,,,,,>> | ,>>,,,,,,,,,,
+
+   ,_,_:_,~~
+    _,~:_,_ |
+    ._______'
+     _____
+        ~_
 
 
-'''~
-'
+'''~++
+--'
 >>    <
-;
+;++
 x"""
 
 for tok in lexer.tokenize(example):
