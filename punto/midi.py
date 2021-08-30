@@ -6,7 +6,12 @@
 # 2. the actual "sequencing" part, that is the play the notes.
 # Those will be be in different threads / processes.
 # 
-# Dependencies: pygame(?) mingus fluidsynth (with homebrew)
+# Dependencies: pygame mingus fluidsynth (optional, with homebrew)
+# 
+# Two ways to generate sound: 
+# Fluidsynth (which takes care of MIDI port itself)
+# or, set MIDI output port and connect it to a synth 
+# (e.g. Helm or an external one)
 
 
 
@@ -42,41 +47,41 @@ def _print_device_info():
 
 if __name__ == '__main__':
 
-    # pygame.midi.init()
-    # GRAND_PIANO = 0
-    # CHURCH_ORGAN = 19
-    # instrument = CHURCH_ORGAN
+    # first start fluidsynth
+    # like this > fluidsynth /usr/local/Cellar/fluid-synth/2.2.2/share/soundfonts/MuseScore_General.sf3
 
+    pygame.midi.init()
+    GRAND_PIANO = 0
+    CHURCH_ORGAN = 19
+    instrument = CHURCH_ORGAN
+
+    _print_device_info()
+    # pick the port we want, e.g. FluidSynth virtual port
     # port = pygame.midi.get_default_output_id()
     # print(f"Using default port {port}")
-    # midi_out = pygame.midi.Output(port, 0)
-    # midi_out.set_instrument(instrument)
+
+    port = 6
+    midi_out = pygame.midi.Output(port, 0)
+    midi_out.set_instrument(instrument)
+
+    
     
 
-    # CM = [74, 78, 81]
-    # D = [74, 76, 81]
-    # DRUM = [35] * 16
-    # FM = [72, 76, 79]
-    # MAX = 127
-    # CPS = 130
-    # brief = 60.0/130 # length of a cycle
+    CM = [74, 78, 81]
+    D = [74, 76, 81]
+    DRUM = [35, 36, 37] * 16
+    FM = [72, 76, 79]
+    MAX = 127
+    CPS = 120
+    brief = 60.0/CPS # length of a cycle
+    channel = 9
     
-    # note = DRUM
-    # volume = MAX # volume is velocity, controlling the loudness
-    # for n in note:
-    #     midi_out.note_on(n, volume, channel=10) # 74 is middle C, 127 is "how loud" - max is 127
-    #     time.sleep(brief)
-    #     midi_out.note_off(n, volume, channel=10)
+    note = DRUM
+    volume = MAX # volume is velocity, controlling the loudness
+    for n in note:
+        midi_out.note_on(n, volume, channel=channel) # 74 is middle C, 127 is "how loud" - max is 127
+        time.sleep(brief)
+
+        midi_out.note_off(n, volume, channel=channel)
  
-    # pygame.midi.quit()
-
-
-    fluidsynth.init(SF2_PATH)
-
-    n = Note("C-5")
-    n.channel = 9
-    fluidsynth.set_instrument(9, 42)
-    n.velocity = 100
-    fluidsynth.play_Note(n)
-    time.sleep(1)
-    fluidsynth.stop_Note(Note("C-5"))
+    pygame.midi.quit()

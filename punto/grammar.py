@@ -4,17 +4,27 @@ from sly import Lexer, Parser
 
 
 class SimpleLexer(Lexer):
+    
+    """TODO:
+    I want to make it less precise -
+    letting the space breath
+    letting the space do the "rhythm"
+    you can kind of build up the space between notes and beats
+    using your intuition, your "feeling"
+    """
+
+
     tokens = {ID, LSHIFTER, RSHIFTER, EXT, DOCT, UOCT, END}
 
     ignore = ' \t'
 
-    ID = r"[,:;'~.]"
+    ID = r"[,:;'~^.]"
     LSHIFTER = r'<{1,}'
     RSHIFTER = r'>{1,}'
-    EXT=r'_'
+    EXT=r'`|_'
     DOCT=r'\-{1,}'
     UOCT=r'\+{1,}'
-    END = r'x|\n{2,}|\|'
+    END = r'v|\n{2,}|\|'
 
     def error(self, t):
         print(f"Ignoring {t.value[0]}")
@@ -31,6 +41,8 @@ class SimpleLexer(Lexer):
             t.value = "G"
         elif t.value == "~":
             t.value = "A"
+        elif t.value == "^":
+            t.value = "R"
         elif t.value == '.':
             t.value = "r"
         return t
@@ -119,22 +131,22 @@ example = """
 ;;;  ; 
 ,,
 
-,,,,,,--,,>> |
+,,,,,,--,,>> v
          ,>>,,,,,
             ,,,,,
 
-   ,_,_:_,~~
+   ,`,`:`,~~
     _,~:_,_ |
-    ._______'
+    ._______^
      _____
-        ~_
+        ;`
 
 
     '''~++
      --' 
   >>    <
     ;++
-     x
+     v
 
 
 """
