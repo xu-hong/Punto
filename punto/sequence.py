@@ -41,7 +41,8 @@ class Data:
         ('A', 2, 'up')
         ('C', 1, 'sharp')
         (('G', 2, 'sharp'), 2, 'down')
-        
+        (('E', 1, 'up'), 1, 'flat')
+
         """
         g = g[0]
         if len(g) == 1:
@@ -98,3 +99,4 @@ if __name__ == '__main__':
     print(Data.from_grammar(('A', 2, 'up')))
     print(Data.from_grammar(('C', 1, 'sharp')))
     print(Data.from_grammar((('G', 2, 'sharp'), 2, 'down')))
+    print(Data.from_grammar((('E', 1, 'up'), 1, 'flat')))
