@@ -1,18 +1,8 @@
 import re
-from sys import setswitchinterval
 from sly import Lexer, Parser
 
 
 class SimpleLexer(Lexer):
-    
-    """TODO:
-    I want to make it less precise -
-    letting the space breath
-    letting the space do the "rhythm"
-    you can kind of build up the space between notes and beats
-    using your intuition, your "feeling"
-    """
-
 
     tokens = {ID, LSHIFTER, RSHIFTER, EXT, DOCT, UOCT, END}
 
@@ -21,7 +11,7 @@ class SimpleLexer(Lexer):
     ID = r"[,:;'~^.]"
     LSHIFTER = r'<{1,}'
     RSHIFTER = r'>{1,}'
-    EXT=r'`|_'
+    EXT=r'[`|_]{1,}'
     DOCT=r'\-{1,}'
     UOCT=r'\+{1,}'
     END = r'v|\n{2,}|\|'
@@ -42,8 +32,10 @@ class SimpleLexer(Lexer):
         elif t.value == "~":
             t.value = "A"
         elif t.value == "^":
+            # rhythm
             t.value = "R"
         elif t.value == '.':
+            # rest
             t.value = "r"
         return t
     
@@ -79,41 +71,42 @@ class SimpleParser(Parser):
         return (p.expr)
 
     @_('ID')
-    def expr(self, p):
+    def note(self, p):
         return (p.ID)
     
-    @_('DOCT expr')
-    def expr(self, p):
+    @_('DOCT note')
+    def note(self, p):
         """Return note, 'down', and the number of octaves"""
         fs = re.findall(r'\-', p.DOCT)
-        return (p.expr, 'down', len(fs))
+        return (p.note, len(fs), 'down')
 
-    @_('expr UOCT')
-    def expr(self, p):
+    @_('note UOCT')
+    def note(self, p):
         """Return note, 'up', and the number of octaves"""
         ss = re.findall(r'\+', p.UOCT)
-        return (p.expr, 'up', len(ss))
+        return (p.note, len(ss), 'up')
     
-    @_('LSHIFTER ID')
-    def expr(self, p):
+    @_('LSHIFTER note')
+    def note(self, p):
         """Return note, 'flat', and the number of seminote"""
         matches = re.findall(r'\<', p.LSHIFTER)
-        return (p.ID, 'flat', len(matches))
+        return (p.note, len(matches), 'flat')
 
-    @_('ID RSHIFTER')
-    def expr(self, p):
+    @_('note RSHIFTER')
+    def note(self, p):
         """Return note, 'sharp', and the number of seminote"""
         matches = re.findall(r'\>', p.RSHIFTER)
-        return (p.ID, 'sharp', len(matches))
+        return (p.note, len(matches), 'sharp')
 
-    @_('expr EXT')
+    @_('note EXT')
     def expr(self, p):
         """Return a note with its length of extension"""
-        if len(p.expr) == 2:
-            n_ext = p.expr[1] + 1
-            return (p.expr[0], n_ext)
-        else:
-            return (p.expr, 1)
+        extensions = re.findall(r'`|_', p.EXT)
+        return (p.note, len(extensions))
+
+    @_('ID')
+    def expr(self, p):
+        return (p.ID)
 
     @_('END')
     def end(self, p):
@@ -128,10 +121,12 @@ lexer = SimpleLexer()
 parser = SimpleParser()
 
 example = """
-;;;  ; 
-,,
+;;;  ; |
+mmmm,___,_,,
 
-,,,,,,--,,>> v
+
+xxxxxxxx this is ignored
+,,,,,,--,,>>` v
          ,>>,,,,,
             ,,,,,
 
@@ -142,16 +137,25 @@ example = """
         ;`
 
 
-    '''~++
-     --' 
-  >>    <
-    ;++
+    '''~++`
+     --'>>_
+     
+     <
+     ;++```
      v
-
-
 """
+
+e1 = ";>++__v"
+e2 = ";+>> __v"
+e3 = '-;> __v'
+e4 = "<-; __v"
+e5 = "-<; __ v"
+e6 = "-;> __v"
+e7 = "<;+ __v"
+
+examples = [e1, e2, e3, e4, e5, e6, e7]
 
 # for tok in lexer.tokenize(example):
 #     print(f"type={tok.type}, value='{tok.value}'")
-
-print(parser.parse(lexer.tokenize(example)))
+for e in examples:
+    print(e, parser.parse(lexer.tokenize(e)))
