@@ -104,9 +104,9 @@ class SimpleParser(Parser):
         extensions = re.findall(r'`|_', p.EXT)
         return (p.note, len(extensions))
 
-    @_('ID')
+    @_('note')
     def expr(self, p):
-        return (p.ID)
+        return (p.note)
 
     @_('END')
     def end(self, p):
@@ -151,7 +151,7 @@ e3 = '-;> __v'
 e4 = "<-; __v"
 e5 = "-<; __ v"
 e6 = "-;> __v"
-e7 = "<;+ __v"
+e7 = " <;+ `` <;+ __ ;+ ;_v"
 
 examples = [e1, e2, e3, e4, e5, e6, e7]
 
