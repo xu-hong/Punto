@@ -43,6 +43,7 @@ class SimpleLexer(Lexer):
 class SimpleParser(Parser):
     # uncomment the following line to output the parser logs
     # debugfile = 'parser.out'
+    
     # required
     tokens = SimpleLexer.tokens
 
@@ -155,7 +156,5 @@ e7 = " <;+ `` <;+ __ ;+ ;_v"
 
 examples = [e1, e2, e3, e4, e5, e6, e7]
 
-# for tok in lexer.tokenize(example):
-#     print(f"type={tok.type}, value='{tok.value}'")
 for e in examples:
     print(e, parser.parse(lexer.tokenize(e)))

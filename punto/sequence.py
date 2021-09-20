@@ -5,7 +5,7 @@ VELOCITY = 64
 CHANNEL = 0
 
 def to_midi_value(n, up=0, sharp=0):
-  #Octave 4, the default
+  # Use Octave 4 as the default
   notes = {
     "C": 72,
     "Cs": 73,
@@ -77,7 +77,6 @@ class Data:
             raise ParserError(f"Malformed parsed message {g}")
 
 
-
 @dataclass
 class Message:
     """A proxy for midi message
@@ -124,9 +123,6 @@ class Message:
             return cls(Data.from_grammar(g[0]), 1)
 
         return cls(Data.from_grammar(g[0]), time_sig+1)
-
-
-
 
 
 if __name__ == '__main__':
